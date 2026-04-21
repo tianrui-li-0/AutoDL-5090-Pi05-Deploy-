@@ -1,10 +1,8 @@
-完整中文版部署链路（可直接放入 GitHub README）
-
----
+我自己摸索出且经过验证的安装方式
 
 租机配置
 
-选项	必须选这个	（因为我只试过这个）
+选项	必须选这个	（主要是因为我只试过这个）
 显卡	RTX 5090	
 镜像	PyTorch 2.8.0 / Python 3.12 (Ubuntu 22.04) / CUDA 12.8	
 磁盘	≥ 50GB 数据盘	
@@ -13,6 +11,11 @@
 > 为什么必须 2.8.0：5090 是 Blackwell 架构（sm_120），PyTorch 2.5.x 不支持，运行时会报 `no kernel image`。
 
 ---
+0：开启学术加速（对官方 huggingface.co 有效）
+```bash
+source /etc/network_turbo
+```
+
 
 一、永久环境变量（写入 `~/.bashrc`）
 
@@ -26,7 +29,7 @@ export HF_ENDPOINT=https://hf-mirror.com
 export HF_HOME=/root/autodl-tmp/hf_cache
 export HUGGINGFACE_HUB_CACHE=/root/autodl-tmp/hf_cache/hub
 export HF_LEROBOT_HOME=/root/autodl-tmp/lerobot_cache
-export HF_TOKEN=hf_你的Token
+export HF_TOKEN=hf_把你自己的token复制上来
 EOF
 
 source ~/.bashrc
@@ -49,7 +52,7 @@ HF_HOME=/root/autodl-tmp/hf_cache
 
 ---
 
-二、验证 PyTorch（base 环境开箱即用）
+二、验证 PyTorch（base 环境可以开箱即用）
 
 ```bash
 python -c "
@@ -102,7 +105,7 @@ print('✅ PI05Policy 导入成功')
 预期输出：
 
 ```text
-LeRobot 版本: 0.4.2
+LeRobot 版本: 0.5.X（比较新的，我用的是0.5.2）
 ✅ PI05Policy 导入成功
 ```
 
@@ -146,15 +149,15 @@ total 14G
 -rw-r--r-- 1 root root  14G /root/autodl-tmp/pi05_base_fixed/model.safetensors
 ```
 
-> `model.safetensors` 必须约 14-15GB，如果只有几百 MB 说明下载中断，重新运行同一命令会自动续传。
+> `model.safetensors` 必须约 14-15GB，如果只有几百 MB 说明下载中断，重新运行同一命令会自动续传
 
 ---
 
 五、下载 Gated Tokenizer（必须走官方源 + Token）
 
-关键说明：Pi0.5 内部依赖 `google/paligemma-3b-pt-224` tokenizer，这是 gated 模型。`hf-mirror.com` 无法代理权限验证，必须切回官方源 + 你的 HF Token。
+关键说明：Pi0.5 内部依赖 `google/paligemma-3b-pt-224` tokenizer，这是 gated 模型。`hf-mirror.com` 无法代理权限验证，必须切回官方源 + 你的 HF Token
 
-前置条件：去 https://huggingface.co/google/paligemma-3b-pt-224 点击 "Acknowledge license" 完成授权。
+前置条件：去 https://huggingface.co/google/paligemma-3b-pt-224 点击 "Acknowledge license" 完成授权
 
 ```bash
 # 临时取消镜像，走官方源
@@ -167,7 +170,7 @@ AutoTokenizer.from_pretrained('google/paligemma-3b-pt-224', token=True)
 print('✅ Tokenizer 缓存完成')
 "
 
-# 恢复镜像（后续下其他权重还用得到）
+# 恢复镜像（后续如果要下其他权重还用得到）
 export HF_ENDPOINT=https://hf-mirror.com
 ```
 
@@ -177,7 +180,7 @@ export HF_ENDPOINT=https://hf-mirror.com
 ls -la $HF_HOME/hub/models--google--paligemma-3b-pt-224/
 ```
 
-预期：目录存在且包含 `snapshots/` 和 `refs/` 子目录。
+预期：目录存在且包含 `snapshots/` 和 `refs/` 子目录
 
 ---
 
@@ -202,7 +205,7 @@ else:
 
 ```text
 ✅ 已处理: 无需修复
-# 或
+# 或者
 ✅ 已处理: ['use_peft', ...]
 ```
 
@@ -289,28 +292,12 @@ All keys loaded successfully!
 
 ---
 
-八、以后新开终端
-
-因为已写入 `~/.bashrc`，只需：
-
-```bash
-source ~/.bashrc
-python /root/autodl-tmp/test_pi05.py
-```
-
----
-
 常见错误速查表
 
-报错	原因	解决	
-`RuntimeError: Unable to read repodata JSON`	清华 Anaconda 源已废弃	`conda create ... --override-channels -c defaults`	
-`ModuleNotFoundError: No module named 'torch'`	在新 conda 环境而非 base	使用自带 PyTorch 2.8.0 的镜像，base 环境直接可用	
+`RuntimeError: Unable to read repodata JSON`	清华 Anaconda 源已废弃	
+
+`ModuleNotFoundError: No module named 'torch'`	在新 conda 环境而非 base	使用自带 PyTorch 2.8.0 的镜像，base 环境直接可用
+
 `ValueError: LEROBOT_HOME is deprecated`	旧环境变量名	改用 `HF_LEROBOT_HOME`	
-`UnicodeEncodeError: 'ascii' codec...`	`HF_TOKEN` 包含中文或占位符	检查 `echo $HF_TOKEN`，确保是真实英文 Token	
-`OSError: We couldn't connect to 'https://hf-mirror.com'`	gated 模型需要官方源 + Token	`unset HF_ENDPOINT; export HF_TOKEN=...`	
-`Got unsupported ScalarType BFloat16`	PyTorch 版本不对	5090 必须 PyTorch 2.8.0+cu128	
-系统盘满	默认装到 `/root`	所有操作在 `/root/autodl-tmp`（数据盘）	
 
----
-
-这份可以直接复制到 `README_CN.md` 里，每一步都有验证点和预期输出，别人跟着跑不会迷路。
+`UnicodeEncodeError: 'ascii' codec...`	`HF_TOKEN` 包含中文或占位符，用`echo $HF_TOKEN`检查，确保是真实英文 Token	
