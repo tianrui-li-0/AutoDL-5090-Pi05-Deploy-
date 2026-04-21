@@ -6,11 +6,11 @@
 
 租机配置
 
-选项	必须选这个	（主要是因为我只试过这个）
-显卡	RTX 5090	
-镜像	PyTorch 2.8.0 / Python 3.12 (Ubuntu 22.04) / CUDA 12.8	
-磁盘	≥ 50GB 数据盘	
-计费	按量计费	
+选项
+1：显卡	RTX 5090 32GB（主要是因为我只试过这个
+2：镜像	PyTorch 2.8.0 / Python 3.12 (Ubuntu 22.04) / CUDA 12.8	
+3：磁盘	≥ 50GB 数据盘	
+4：计费	随意
 
 > 为什么必须 2.8.0：5090 是 Blackwell 架构（sm_120），PyTorch 2.5.x 不支持，运行时会报 `no kernel image`。
 
