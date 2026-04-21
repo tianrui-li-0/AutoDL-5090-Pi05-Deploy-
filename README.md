@@ -8,15 +8,18 @@
 
 选项
 1：显卡	RTX 5090 32GB（主要是因为我只试过这个
+
 2：镜像	PyTorch 2.8.0 / Python 3.12 (Ubuntu 22.04) / CUDA 12.8	
+
 3：磁盘	≥ 50GB 数据盘	
+
 4：计费	随意
 
 > 为什么必须 2.8.0：5090 是 Blackwell 架构（sm_120），PyTorch 2.5.x 不支持，运行时会报 `no kernel image`。
 
 ---
 
-0：开启学术加速（对官方 huggingface.co 有效）
+开机后首先开启学术加速（对官方 huggingface.co 有效）
 ```bash
 source /etc/network_turbo
 ```
