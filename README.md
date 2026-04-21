@@ -1,4 +1,8 @@
-我自己摸索出且经过验证的安装方式
+# **经过验证的 LeRobot 0.5.2 和 Pi0.5 的安装方式**
+
+> ⚠️ **如果你遇到了任何错误请及时私信**
+
+
 
 租机配置
 
@@ -11,6 +15,7 @@
 > 为什么必须 2.8.0：5090 是 Blackwell 架构（sm_120），PyTorch 2.5.x 不支持，运行时会报 `no kernel image`。
 
 ---
+
 0：开启学术加速（对官方 huggingface.co 有效）
 ```bash
 source /etc/network_turbo
@@ -29,7 +34,7 @@ export HF_ENDPOINT=https://hf-mirror.com
 export HF_HOME=/root/autodl-tmp/hf_cache
 export HUGGINGFACE_HUB_CACHE=/root/autodl-tmp/hf_cache/hub
 export HF_LEROBOT_HOME=/root/autodl-tmp/lerobot_cache
-export HF_TOKEN=hf_把你自己的token复制上来
+export HF_TOKEN=hf_你的Token
 EOF
 
 source ~/.bashrc
